@@ -1,0 +1,3 @@
+[submodule "2014/june_meetup/pymongo_intro/res/reveal.js"]
+	path = 2014/june_meetup/pymongo_intro/res/reveal.js
+	url = https://github.com/hakimel/reveal.js.git
