@@ -1,0 +1,263 @@
+<!--
+Google IO 2012/2013 HTML5 Slide Template
+
+Authors: Eric Bidelman <ebidel@gmail.com>
+         Luke Mahé <lukem@google.com>
+
+URL: https://code.google.com/p/io-2012-slides
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">-->
+  <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+  <!--This one seems to work all the time, but really small on ipad-->
+  <!--<meta name="viewport" content="initial-scale=0.4">-->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" media="all" href="theme/css/default.css">
+  <link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="theme/css/phone.css">
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->
+  <script data-main="js/slides" src="js/require-1.0.8.min.js"></script>
+</head>
+<body style="opacity: 0">
+
+<slides class="layout-widescreen">
+
+  <slide class="title-slide segue nobackground">
+    <aside class="gdbar"><img src="images/postgresql_icon_128.png"></aside>
+    <!-- The content of this hgroup is replaced programmatically through the slide_config.json. -->
+    <hgroup class="auto-fadein">
+      <h1 data-config-title><!-- populated from slide_config.json --></h1>
+      <h2 data-config-subtitle><!-- populated from slide_config.json --></h2>
+      <p data-config-presenter><!-- populated from slide_config.json --></p>
+    </hgroup>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Hello World...</h2>
+    </hgroup>
+    <article class="smaller">
+      <ul>
+        <li>Who am I? </li>
+	<li>Any sysadmin worst nightmare and the bane of Friday afternoon meetings</li> 
+	<li>DBA for couple of years, mostly (and preferably with Postgres, its the cats whiskers)</li>
+        <li>Where I am on social sphere:
+          <ul>
+            <li>corrie206 (everywhere)</li>
+            <li>206 = 2.06m tall</li>
+          </ul>
+        </li>
+      </ul>
+	<br>
+	<br>
+      <p>Licensed as Creative Commons, under "Free Cultural Works " http://creativecommons.org/freeworks , share, use, abuse, blah blah</p>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Some background</h2>
+    </hgroup>
+    <article class="smaller">
+      <p>What is a PL (Procedural Language)?</p>
+      <ul class="build">
+        <li>A language for creating user-defined functions in the database, that are called directly from SQL queries.</li>
+      </ul>
+      <p>In the context of a RDBMS, what is a function?</p>
+      <ul class="build">
+        <li>Traditionally, a thin wrapper on a snippet of SQL that the parser may inline:
+		<pre class="prettyprint" data-lang="sql">
+			CREATE FUNCTION add(integer, integer) RETURNS integer
+			AS 'select $1 + $2;'
+			LANGUAGE SQL
+			IMMUTABLE
+			STRICT;
+		
+			-- Now, to call our newly defined function:
+			SELECT add(2, 2) AS result;
+			result
+			--------
+			4
+			(1 row)
+		</pre>
+	</li>
+      </ul>
+    </article>
+  </slide>
+
+<slide>
+    <hgroup>
+    </hgroup>
+    <article class="smaller">
+      <p>Functions can be written in:</p>
+	<ul>
+		<li>C</li>
+		<li>SQL</li>
+	</ul>
+	<p> Or in a procedural language (PL):</p>
+	<ul>
+		<li>PL/R</li>
+		<li>PL/OpenCL</li>
+		<li>PL/LOLCODE</li>
+		<li>PL/PgSQL</li>
+		<li>PL/Python ( this is what we're going to be talking about)</li>
+	</ul>
+
+    </article>
+  </slide>
+
+<slide>
+    <hgroup>
+	<h2>Quick Overview of PL/Python</h2>
+    </hgroup>
+    <article class="smaller">
+	<p></p>
+      	<ul>
+		<li>Since Postgres 9.1, PL/Python has been getting a lot of love for developers. (yay)</li>
+		<li>As of PostgreSQL 7.4, PL/Python is only available as an "untrusted" language, meaning it does not offer any way of restricting what users can do in it</li>
+		<li>Users of source packages must specially enable the build of PL/Python during the installation process<li>
+		<li>Users of binary packages might find PL/Python in a separate subpackage</li>
+	</ul>
+	<br>
+	<ul>
+		<li>Supports Python 2 and Python 3 (seperate and both)</li>
+		<li>Acts as a seemless wrapper between the SQL interpreter and Python, mapping datatypes and concepts as appropriate</li>
+		<li>Got to be honest, there is no plpython, its plpythonu, for untrusted, you need supervisor privileges and IT CAN BE DANGEROUS</li>
+	</ul>
+    </article>
+  </slide>
+
+<slide>
+    <hgroup>
+	<h2>Quick (VERY) installation guide</h2>
+    </hgroup>
+    <article class="smaller">
+
+	• Installing postgres
+	Debian includes PostgreSQL by default. To install PostgreSQL on Debian, use the apt-get (or other apt-driving) command:
+		(add "deb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main" to apt sources.list
+	add the key:
+		"wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - ; sudo apt-get update")
+	Right, then:	
+		"sudo apt-get install postgresql-server-dev-9.2 postgresql-contrib-9.2 postgresql-plpython-9.2"
+		(for python3, use "postgresql-plpython3-9.2")
+	Quickly edit the pg_hba.conf and postgres.conf to allow connections (out of this talk scope for optimizing these config files)
+		sudo vi /etc/postgresql/9.2/main/postgresql.conf
+			unhash and change:  "listen_addresses = '*'"
+		sudo vi /etc/postgresql/9.2/main/pg_hba.conf
+			local   all             postgres                                trust
+	Restart Postgres server
+		sudo services postgresql restart
+	Change your postgres user DB password, NEVER THE *nix/windows user password, trust me, its a woooorld of pain)
+		sudo su - postgres -c "psql"
+		\password
+
+	Let's create the test db:
+		CREATE DATABASE testdb;
+	and connect to it:
+		\c testdb;
+	
+	Add PL/Python to the database (you add the language to the database):
+		CREATE LANGAUGE plpython;
+	
+	Check with: 
+		select * from pg_language;
+
+	<p>Right, so first, I'm going through the basic steps to get Postgres and PL/Python installed on a Linux box, my flavor of choice is Debian</p>
+      	<ul>
+		<li>Debian includes PostgreSQL by default. But we want to the 9.2 version, to install, add the source and use the apt-get (or other apt-driving) command:
+		(add "deb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main" to apt sources.list</li>
+		<li>As of PostgreSQL 7.4, PL/Python is only available as an "untrusted" language, meaning it does not offer any way of restricting what users can do in it</li>
+		<li>Users of source packages must specially enable the build of PL/Python during the installation process<li>
+		<li>Users of binary packages might find PL/Python in a separate subpackage</li>
+	</ul>
+	<br>
+	<ul>
+		<li>Supports Python 2 and Python 3 (seperate and both)</li>
+		<li>Acts as a seemless wrapper between the SQL interpreter and Python, mapping datatypes and concepts as appropriate</li>
+		<li>Got to be honest, there is no plpython, its plpythonu, for untrusted, you need supervisor privileges and IT CAN BE DANGEROUS</li>
+	</ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+    </hgroup>
+    <article class="smaller">
+      <p>Functions can be written in:</p>
+	<ul>
+		<li>C</li>
+		<li>SQL</li>
+	</ul>
+	<p> Or in a procedural language (PL):</p>
+	<ul>
+		<li>PL/R</li>
+		<li>PL/OpenCL</li>
+		<li>PL/LOLCODE</li>
+		<li>PL/PgSQL</li>
+		<li>PL/Python ( this is what we're going to be talking about)</li>
+	</ul>
+
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Slide with Image (Centered horz/vert)</h2>
+    </hgroup>
+    <article class="flexbox vcenter">
+      <img src="images/barchart.png" alt="Description" title="Description">
+      <footer class="source">source: place source info here</footer>
+    </article>
+  </slide>
+
+
+<slide>
+    <hgroup>
+      <h2></h2>
+    </hgroup>
+    <article class="smaller">
+	<br>
+	<p>“Let the database be good at what it's good at, including smart processing of bulk data...Avoid shipping data to an external client program just to process and ship stuff back to the database. Only fetch data from the database if you need it to display or send to another system.”</p>
+	<br>
+	<p>- Andrew Dunstan's dictum (PostgreSQL major contributor).</p>
+    </article>
+  </slide>
+
+  <slide class="thank-you-slide segue nobackground">
+    <aside class="gdbar right"><img src="images/postgresql_icon_128.png"></aside>
+    <article class="flexbox vleft auto-fadein">
+      <h2>&lt;Thank You!&gt;</h2>
+      <p>Contact me here</p>
+    </article>
+    <p class="auto-fadein" data-config-contact>
+      <!-- populated from slide_config.json -->
+    </p>
+  </slide>
+
+  <slide class="backdrop"></slide>
+
+</slides>
+
+<script>
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-XXXXXXXX-1']);
+_gaq.push(['_trackPageview']);
+
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
+</script>
+
+<!--[if IE]>
+  <script src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+  <script>CFInstall.check({mode: 'overlay'});</script>
+<![endif]-->
+</body>
+</html>
