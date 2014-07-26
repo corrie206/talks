@@ -21,3 +21,12 @@ This talk was presented at the June GPUG meetup.
 
 An introduction to Python 3.4's `asyncio` module. This writeup follows a
 discussion on the topic, held at the GPUG meetup on 28 June 2014.
+
+
+## Presentation: Introduction to PL/Python in Postgres
+
+* Author: [Corrie Strydom](https://github.com/corrie206)
+* Presented: 19 July 2014
+
+A brief introduction to using PL/Python with Postgres.
+This talk was presented at the JuLy GPUG meetup.
